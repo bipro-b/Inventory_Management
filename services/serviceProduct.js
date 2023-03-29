@@ -1,3 +1,4 @@
+const { deleteModel } = require("mongoose");
 const Product = require("../models/Product");
 
 exports.createProductServices = async(data)=>{
@@ -43,3 +44,40 @@ exports.getProductServices = async(data)=>{
  */
 
 }
+
+exports.productUpdateServices=async(productId,data)=>{
+    const result = await Product.updateOne(
+        {_id:productId},
+        {$set:data},
+        {runValidators:true}
+    );
+}
+
+exports.productBulkUpdateServices=async(data)=>{
+    const products=[];
+    data.ids.forEach((product) => {
+        products.push(Product.updateOne({_id:data.id},product.data));
+    });
+    const result = await Promise.all(products);
+    return result;
+}
+
+
+exports.deleteProductServicesById = async(id)=>{
+    const deletedProduct = await Product.deleteOne({_id:id});
+    return deletedProduct;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,9 +6,17 @@ exports.createProductServices = async(data)=>{
     return products;
 }
 
-exports.getProductServices = async(data)=>{
-    const products = await Product.find();
-    return products;
+exports.getProductServices = async(filters,queries)=>{
+    const products = await Product.find({})
+    .skip(queries.skip)
+    .limit(queries.limit)
+    .sort(queries.sortBy)
+    .select(queries.fields)
+    ;
+    const totalProducts = await Product.countDocuments(filters)
+
+    const pageCount = Math.ceil(totalProducts/queries.limit);
+    return {products,totalProducts,pageCount};
 
  /* 
     => or

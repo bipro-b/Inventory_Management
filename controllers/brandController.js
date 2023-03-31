@@ -43,11 +43,11 @@ exports.getBrandById = async (req, res, next) => {
     const { id } = req.params;
     const result = await getBrandServiceById(id);
     if (!result) {
-        return res.status(400).json({
-          status: "fail",
-          error: "Couldn't find a brand with this id",
-        });
-      }
+      return res.status(400).json({
+        status: "fail",
+        error: "Couldn't find a brand with this id",
+      });
+    }
     res.status(200).json({
       status: "Success",
       message: "Data fetched Successfully",
@@ -63,25 +63,19 @@ exports.getBrandById = async (req, res, next) => {
 };
 
 exports.updateBrandById = async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const result = await updateBrandServiceById(id,req.body);
-    // if(!result.nModified){
-    //     return res.status(400).json({
-    //         status:"Fail",
-    //         error:"Wrong Id "
-    //     })
-    // }
-      res.status(200).json({
-        status: "Success",
-        message: "Data updated Successfully",
-        data: result,
-      });
-    } catch (error) {
-      res.status(400).json({
-        status: "Fail",
-        message: "Data is not updated",
-        error: error.message,
-      });
-    }
-  };
+  try {
+    const { id } = req.params;
+    const result = await updateBrandServiceById(id, req.body);
+    res.status(200).json({
+      status: "Success",
+      message: "Data updated Successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "Fail",
+      message: "Data is not updated",
+      error: error.message,
+    });
+  }
+};

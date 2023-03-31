@@ -2,6 +2,7 @@ const {
   createBrandService,
   getBrandService,
   getBrandServiceById,
+  updateBrandServiceById,
 } = require("../services/brandService");
 
 exports.createBrand = async (req, res, next) => {
@@ -60,3 +61,27 @@ exports.getBrandById = async (req, res, next) => {
     });
   }
 };
+
+exports.updateBrandById = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const result = await updateBrandServiceById(id,req.body);
+    // if(!result.nModified){
+    //     return res.status(400).json({
+    //         status:"Fail",
+    //         error:"Wrong Id "
+    //     })
+    // }
+      res.status(200).json({
+        status: "Success",
+        message: "Data updated Successfully",
+        data: result,
+      });
+    } catch (error) {
+      res.status(400).json({
+        status: "Fail",
+        message: "Data is not updated",
+        error: error.message,
+      });
+    }
+  };

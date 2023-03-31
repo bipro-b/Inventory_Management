@@ -8,5 +8,6 @@ router.route("/")
 
 router.route("/:id")
 .get(brandController.getBrandById)
+.patch(brandController.updateBrandById)
 
 module.exports = router;

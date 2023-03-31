@@ -45,7 +45,7 @@ exports.getProductServices = async(filters,queries)=>{
         .gt(100)
         .limit(2)
 
-    Findone
+    FindOne
     const product =await Product.findById("were234234234234");
     
 

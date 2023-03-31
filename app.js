@@ -11,9 +11,11 @@ app.use(cors());
 //Routes
 
 const productRoute = require("./routes/routeProduct")
-
+const brandRoute = require("./routes/brandRoute");
 
 app.use("/api/v1/product",productRoute)
+app.use("/api/v1/brand",brandRoute)
+
 
 
 

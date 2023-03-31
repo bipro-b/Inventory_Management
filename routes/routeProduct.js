@@ -7,8 +7,8 @@ router.route("/bulk-update").patch(productController.bulkUpdateProduct)
 router.route("/bulk-delete").delete(productController.bulkDeleteProduct)
 
 router.route("/")
-.get(productController.getProduct).
-post(productController.createProduct);
+.get(productController.getProduct)
+.post(productController.createProduct);
 
 router
 .route("/:id")

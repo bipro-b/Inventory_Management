@@ -24,7 +24,7 @@ const productSchema = mongoose.Schema({
           message: "Invalid {value}, must be kg/litre/pcs/bag",
         },
       },
-      imgageURLs: [
+      imageURLs: [
         {
           type: String,
           required: true,

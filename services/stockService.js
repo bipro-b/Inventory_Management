@@ -5,9 +5,18 @@ exports.createStockService = async (data) => {
   return stock;
 };
 
-exports.getStockService = async () => {
-  const stocks = await Stock.find({});
-  return stocks;
+exports.getStockService = async (filters,queries) => {
+  const stocks = await Stock.find({})
+  .skip(queries.skip)
+  .limit(queries.limit)
+  .sort(queries.sortBy)
+  .select(queries.fields)
+  ;
+  const totalStocks = await Stock.countDocuments(filters)
+
+  const pageCount = Math.ceil(totalStocks/queries.limit);
+  return {stocks,totalStocks,pageCount};
+
 };
 
 exports.getStockServiceById = async (id) => {

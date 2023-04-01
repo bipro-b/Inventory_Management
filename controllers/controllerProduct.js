@@ -33,28 +33,27 @@ exports.getProduct = async (req, res, next) => {
 
     const excludesFilters = ["sort", "page", "limit"];
     excludesFilters.forEach((field) => delete filters[field]);
-    
+
     // filters
     let filtersString = JSON.stringify(filters);
     filtersString = filtersString.replace(
       /\b(gt|gte|le|lte|ne)\b/g,
       (match) => `$${match}`
     );
-     
-    filters=JSON.parse(filtersString);
 
- const queries = {};
+    filters = JSON.parse(filtersString);
 
-// pagination
+    const queries = {};
 
-if(req.query.page){
-    const {page=1,limit=3} = req.query;
+    // pagination
 
-    const skip = (page-1)*parseInt(limit);
-    queries.skip=skip;
-    queries.limit=parseInt(limit);
-}
+    if (req.query.page) {
+      const { page = 1, limit = 3 } = req.query;
 
+      const skip = (page - 1) * parseInt(limit);
+      queries.skip = skip;
+      queries.limit = parseInt(limit);
+    }
 
     // queries
     if (req.query.sort) {
@@ -172,11 +171,9 @@ exports.bulkDeleteProduct = async (req, res, next) => {
   }
 };
 
-exports.fileUpload = async(req,res)=>{
+exports.fileUpload = async (req, res) => {
   try {
-    res.status(200).json(req.file)
+    res.status(200).json(req.file);
     // req.file will be for multiple file uploading
-  } catch (error) {
-    
-  }
-}
+  } catch (error) {}
+};

@@ -171,3 +171,12 @@ exports.bulkDeleteProduct = async (req, res, next) => {
     });
   }
 };
+
+exports.fileUpload = async(req,res)=>{
+  try {
+    res.status(200).json(req.file)
+    // req.file will be for multiple file uploading
+  } catch (error) {
+    
+  }
+}

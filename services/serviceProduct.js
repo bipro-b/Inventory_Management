@@ -1,8 +1,15 @@
-const { deleteModel } = require("mongoose");
 const Product = require("../models/Product");
+const Brand = require("../models/Brand");
 
 exports.createProductServices = async(data)=>{
     const products = await Product.create(data);
+    
+    const {_id:productId,brand} = products;
+    await Brand.updateOne(
+        {_id:brand.id},
+        {$push:{products:productId}}
+    )
+    
     return products;
 }
 

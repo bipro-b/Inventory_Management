@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const userSchema = mongoose.Schema(
   {
     email: {
@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema(
             minUppercase: 1,
             minSymbol: 1,
           }),
-        message: "Passsword {Value} is not strong enough.",
+        message: "Password {Value} is not strong enough.",
       },
     },
     confirmPassword: {
@@ -74,9 +74,7 @@ const userSchema = mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
-  {
-    timestams: true,
-  }
+  { timestamps: true }
 );
 
 

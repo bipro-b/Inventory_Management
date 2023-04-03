@@ -1,4 +1,5 @@
 const { signUpService, findUserByEmail } = require("../services/signUpService");
+const { generateToken } = require("../utils/util");
 exports.signUp = async (req, res, next) => {
   try {
     const user = await signUpService(req.body);
@@ -62,10 +63,14 @@ exports.logIn = async (req, res) => {
       });
     }
 
+    const token = generateToken(user);
+
     res.status(200).json({
       status: "Success",
       message: "Successfully login",
-      data: user,
+      data:{
+        user,token
+      }
     });
   } catch (error) {
     res.status(500).json({

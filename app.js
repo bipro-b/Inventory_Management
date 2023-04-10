@@ -8,6 +8,11 @@ const mongoose = require("mongoose")
 app.use(express.json());
 app.use(cors());
 
+
+app.get("/", (req, res) => {
+    res.send("Server is running ");
+  });
+
 //Routes
 
 const productRoute = require("./routes/routeProduct")

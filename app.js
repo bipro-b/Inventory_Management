@@ -10,7 +10,7 @@ app.use(cors());
 
 
 app.get("/", (req, res) => {
-    res.send("Server is running and working following CI/CD zero downtime ");
+    res.send("Testing CI/CD for zero downtime!");
   });
 
 //Routes

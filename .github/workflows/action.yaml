@@ -85,7 +85,7 @@ jobs:
             IMAGE_TAG="latest"
             NGINX_CONF_PATH="/etc/nginx/sites-enabled/default"
             NGINX_SERVICE="nginx"
-            CONTAINER_PORT=5000 # The port the Node.js app runs on inside the container
+            CONTAINER_PORT=8000 # The port the Node.js app runs on inside the container
             
             # 1. Login to Docker Hub
             echo "1. Logging into Docker Hub..."

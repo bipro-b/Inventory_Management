@@ -123,7 +123,7 @@ Start the initial container manually:
 docker run -d \
     --name inventory-app_5001 \
     -p 5001:8000 \
-    -e MONGO="mongodb+srv://bipro:bipro@cluster0.uo7uglt.mongodb.net/efarm?retryWrites=true&w=majority" \
+    -e MONGO="mongodb+srv://<user>:<pass>@cluster0.uo7uglt.mongodb.net/efarm?retryWrites=true&w=majority" \
     -e PORT="5000" \
     -e TOKEN_SECRET="4c6ee5bb4ce3928dfabf9c6b074fa7e898e40191c4729a324686629af8ca2f704376177d721cebe5dfe04caac03786dd989c0141ff1d4c16b9b2b4336d9dc136" \
     <DOCKER_USERNAME>/inventory-app:latest
@@ -218,11 +218,3 @@ npm start
 
 ---
 
-If you'd like, I can also:
-
-✅ Add screenshots
-✅ Add architecture diagram
-✅ Add badges (Docker, Node, CI/CD, etc.)
-✅ Add a deploy.sh visual explanation
-
-Just tell me!

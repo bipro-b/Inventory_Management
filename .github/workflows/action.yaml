@@ -1,0 +1,144 @@
+name: 🚀 Blue/Green Docker Deployment to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  # The name used for the Docker image on Docker Hub
+  APP_IMAGE_NAME: inventory-app
+  # Docker Hub username used for login
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  
+jobs:
+  blue_green_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # --- Docker Build and Push ---
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_IMAGE_NAME }}:latest
+
+      # --- Deployment to EC2 ---
+      - name: Execute Blue/Green Deployment Script via SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.AWS_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          # The deploy script is uploaded as a HERE-document to the EC2 machine
+          # We pass all necessary environment variables to the remote script
+          # The key structure is: -e "VAR_NAME=\${{ secrets.VAR_NAME }}"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            
+            # Use the provided secrets as environment variables in the remote script
+            export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
+            export DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
+            export MONGO_ENV="${{ secrets.MONGO }}"
+            export PORT_ENV="${{ secrets.PORT }}"
+            export TOKEN_SECRET_ENV="${{ secrets.TOKEN_SECRET }}"
+            
+            # --- START DEPLOY.SH SCRIPT LOGIC ---
+            
+            # Copy-paste the full content of the generated deploy.sh here
+            
+            # Function to find the currently active port based on Nginx config
+            get_active_port() {
+                NGINX_CONF_PATH="/etc/nginx/sites-enabled/default"
+                if grep -q "proxy_pass http://localhost:5001;" $NGINX_CONF_PATH; then
+                    echo "5001"
+                elif grep -q "proxy_pass http://localhost:5002;" $NGINX_CONF_PATH; then
+                    echo "5002"
+                else
+                    echo "5001"
+                fi
+            }
+
+            # Function to get the target port (the inactive port)
+            get_target_port() {
+                ACTIVE_PORT=$(get_active_port)
+                if [ "$ACTIVE_PORT" == "5001" ]; then
+                    echo "5002"
+                else
+                    echo "5001"
+                fi
+            }
+
+            # Configuration variables used inside the script
+            APP_NAME="inventory-app"
+            IMAGE_TAG="latest"
+            NGINX_CONF_PATH="/etc/nginx/sites-enabled/default"
+            NGINX_SERVICE="nginx"
+            CONTAINER_PORT=5000 # The port the Node.js app runs on inside the container
+            
+            # 1. Login to Docker Hub
+            echo "1. Logging into Docker Hub..."
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+
+            # 2. Pull the latest image
+            echo "2. Pulling image ${DOCKER_USERNAME}/${APP_NAME}:${IMAGE_TAG}..."
+            docker pull ${DOCKER_USERNAME}/${APP_NAME}:${IMAGE_TAG}
+
+            # 3. Determine ports
+            ACTIVE_PORT=$(get_active_port)
+            TARGET_PORT=$(get_target_port)
+            OLD_CONTAINER_NAME="${APP_NAME}_${ACTIVE_PORT}"
+            NEW_CONTAINER_NAME="${APP_NAME}_${TARGET_PORT}"
+
+            echo "--- Current State ---"
+            echo "Active Port: $ACTIVE_PORT (Container: $OLD_CONTAINER_NAME)"
+            echo "Target Port: $TARGET_PORT (Container: $NEW_CONTAINER_NAME)"
+            echo "---------------------"
+
+            # 4. Stop and remove any pre-existing container on the target port (just in case)
+            docker stop "$NEW_CONTAINER_NAME" 2>/dev/null || true
+            docker rm "$NEW_CONTAINER_NAME" 2>/dev/null || true
+
+            # 5. Start the new container on the TARGET_PORT
+            echo "5. Starting new container ($NEW_CONTAINER_NAME) on port $TARGET_PORT..."
+            docker run -d \
+                --name "$NEW_CONTAINER_NAME" \
+                -p "$TARGET_PORT":"$CONTAINER_PORT" \
+                -e MONGO="${MONGO_ENV}" \
+                -e PORT="${PORT_ENV}" \
+                -e TOKEN_SECRET="${TOKEN_SECRET_ENV}" \
+                ${DOCKER_USERNAME}/${APP_NAME}:${IMAGE_TAG}
+
+            # 6. Wait for the new container to start and initialize
+            echo "6. Waiting 10 seconds for $NEW_CONTAINER_NAME to boot up..."
+            sleep 10
+
+            # 7. Update Nginx configuration
+            echo "7. Switching Nginx from port $ACTIVE_PORT to port $TARGET_PORT..."
+            sudo sed -i "s|proxy_pass http://localhost:$ACTIVE_PORT;|proxy_pass http://localhost:$TARGET_PORT;|g" $NGINX_CONF_PATH
+
+            # 8. Reload Nginx gracefully
+            echo "8. Reloading Nginx service..."
+            sudo systemctl reload $NGINX_SERVICE
+
+            # 9. Cleanup the old container
+            echo "9. Stopping and removing old container ($OLD_CONTAINER_NAME) on port $ACTIVE_PORT..."
+            docker stop "$OLD_CONTAINER_NAME" || true
+            docker rm "$OLD_CONTAINER_NAME" || true
+
+            echo "Deployment successful. New active port is $TARGET_PORT. Access via public port 5000."
+            
+            # --- END DEPLOY.SH SCRIPT LOGIC ---
+            
+          EOF

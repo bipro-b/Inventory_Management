@@ -218,11 +218,3 @@ npm start
 
 ---
 
-If you'd like, I can also:
-
-✅ Add screenshots
-✅ Add architecture diagram
-✅ Add badges (Docker, Node, CI/CD, etc.)
-✅ Add a deploy.sh visual explanation
-
-Just tell me!
